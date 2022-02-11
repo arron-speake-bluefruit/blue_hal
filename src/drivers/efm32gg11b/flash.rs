@@ -21,15 +21,21 @@ pub struct Map;
 pub struct Page(pub u16);
 
 impl Map {
-    pub fn pages() -> impl Iterator<Item = Page> { (0..count::PAGES as u16).map(Page) }
+    pub fn pages() -> impl Iterator<Item = Page> {
+        (0..count::PAGES as u16).map(Page)
+    }
 }
 
 impl Map {
-    pub const fn size() -> usize { size::PAGE * count::PAGES }
+    pub const fn size() -> usize {
+        size::PAGE * count::PAGES
+    }
 }
 
 impl Page {
-    pub fn address(&self) -> Address { Address(self.0 as u32 * size::PAGE as u32) }
+    pub fn address(&self) -> Address {
+        Address(self.0 as u32 * size::PAGE as u32)
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -57,21 +63,29 @@ pub struct Address(pub u32);
 
 impl Add<usize> for Address {
     type Output = Self;
-    fn add(self, rhs: usize) -> Address { Address(self.0 + rhs as u32) }
+    fn add(self, rhs: usize) -> Address {
+        Address(self.0 + rhs as u32)
+    }
 }
 
 impl Sub<usize> for Address {
     type Output = Self;
-    fn sub(self, rhs: usize) -> Address { Address(self.0.saturating_sub(rhs as u32)) }
+    fn sub(self, rhs: usize) -> Address {
+        Address(self.0.saturating_sub(rhs as u32))
+    }
 }
 
 impl Sub<Address> for Address {
     type Output = usize;
-    fn sub(self, rhs: Address) -> usize { self.0.saturating_sub(rhs.0) as usize }
+    fn sub(self, rhs: Address) -> usize {
+        self.0.saturating_sub(rhs.0) as usize
+    }
 }
 
 impl Into<usize> for Address {
-    fn into(self) -> usize { self.0 as usize }
+    fn into(self) -> usize {
+        self.0 as usize
+    }
 }
 
 impl Flash {
@@ -88,9 +102,13 @@ impl Flash {
         Self { msc }
     }
 
-    fn is_busy(&self) -> bool { self.msc.status.read().busy().bit_is_set() }
+    fn is_busy(&self) -> bool {
+        self.msc.status.read().busy().bit_is_set()
+    }
 
-    fn wait_until_not_busy(&self) { while self.is_busy() {} }
+    fn wait_until_not_busy(&self) {
+        while self.is_busy() {}
+    }
 
     fn wait_until_ready_to_write(&self) {
         while self.msc.status.read().wdataready().bit_is_clear() {}
@@ -124,7 +142,13 @@ impl Flash {
             .invaddr()
             .bit_is_set()
             .then_some(Error::InvalidAddress)
-            .or(self.msc.status.read().locked().bit_is_set().then_some(Error::MemoryIsLocked));
+            .or(self
+                .msc
+                .status
+                .read()
+                .locked()
+                .bit_is_set()
+                .then_some(Error::MemoryIsLocked));
 
         if let Some(error) = error {
             Err(nb::Error::Other(error))
@@ -174,7 +198,9 @@ impl ReadWrite for Flash {
 
     type Address = Address;
 
-    fn label() -> &'static str { "efm32gg11b flash (Internal)" }
+    fn label() -> &'static str {
+        "efm32gg11b flash (Internal)"
+    }
 
     fn read(&mut self, address: Self::Address, bytes: &mut [u8]) -> nb::Result<(), Self::Error> {
         let inside_map = Map.contains(address) && Map.contains(address + bytes.len());
@@ -221,7 +247,6 @@ impl ReadWrite for Flash {
     fn range(&self) -> (Self::Address, Self::Address) {
         (Address(0), Address(0) + count::PAGES * size::PAGE)
     }
-
 
     fn erase(&mut self) -> nb::Result<(), Self::Error> {
         if self.is_busy() {

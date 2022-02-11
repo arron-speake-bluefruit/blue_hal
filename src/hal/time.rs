@@ -70,41 +70,67 @@ pub trait U32Ext {
 }
 
 impl U32Ext for u32 {
-    fn bps(self) -> Bps { Bps(self) }
+    fn bps(self) -> Bps {
+        Bps(self)
+    }
 
-    fn hz(self) -> Hertz { Hertz(self) }
+    fn hz(self) -> Hertz {
+        Hertz(self)
+    }
 
-    fn khz(self) -> KiloHertz { KiloHertz(self) }
+    fn khz(self) -> KiloHertz {
+        KiloHertz(self)
+    }
 
-    fn mhz(self) -> MegaHertz { MegaHertz(self) }
+    fn mhz(self) -> MegaHertz {
+        MegaHertz(self)
+    }
 
-    fn s(self) -> Seconds { Seconds(self) }
+    fn s(self) -> Seconds {
+        Seconds(self)
+    }
 
-    fn ms(self) -> Milliseconds { Milliseconds(self) }
+    fn ms(self) -> Milliseconds {
+        Milliseconds(self)
+    }
 
-    fn us(self) -> Microseconds { Microseconds(self) }
+    fn us(self) -> Microseconds {
+        Microseconds(self)
+    }
 }
 
 impl Into<Hertz> for KiloHertz {
-    fn into(self) -> Hertz { Hertz(self.0 * 1_000) }
+    fn into(self) -> Hertz {
+        Hertz(self.0 * 1_000)
+    }
 }
 
 impl Into<Hertz> for MegaHertz {
-    fn into(self) -> Hertz { Hertz(self.0 * 1_000_000) }
+    fn into(self) -> Hertz {
+        Hertz(self.0 * 1_000_000)
+    }
 }
 
 impl Into<KiloHertz> for MegaHertz {
-    fn into(self) -> KiloHertz { KiloHertz(self.0 * 1_000) }
+    fn into(self) -> KiloHertz {
+        KiloHertz(self.0 * 1_000)
+    }
 }
 
 impl Into<Milliseconds> for Seconds {
-    fn into(self) -> Milliseconds { Milliseconds(self.0 * 1_000) }
+    fn into(self) -> Milliseconds {
+        Milliseconds(self.0 * 1_000)
+    }
 }
 
 impl Into<Microseconds> for Seconds {
-    fn into(self) -> Microseconds { Microseconds(self.0 * 1_000_000) }
+    fn into(self) -> Microseconds {
+        Microseconds(self.0 * 1_000_000)
+    }
 }
 
 impl Into<Microseconds> for Milliseconds {
-    fn into(self) -> Microseconds { Microseconds(self.0 * 1_000) }
+    fn into(self) -> Microseconds {
+        Microseconds(self.0 * 1_000)
+    }
 }

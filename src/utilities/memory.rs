@@ -90,7 +90,11 @@ where
     I: Iterator<Item = R>,
 {
     fn overlaps(self, memory: &'a [u8], base_address: A) -> OverlapIterator<A, R, I> {
-        OverlapIterator { memory, regions: self, base_address }
+        OverlapIterator {
+            memory,
+            regions: self,
+            base_address,
+        }
     }
 }
 
@@ -125,11 +129,23 @@ mod test {
         let memory_slice = &memory[..];
         let base_address = 0x20;
 
-        let regions =
-            [FakeRegion { start: 0x30, size: 0x10 }, FakeRegion { start: 0x40, size: 0x05 }];
+        let regions = [
+            FakeRegion {
+                start: 0x30,
+                size: 0x10,
+            },
+            FakeRegion {
+                start: 0x40,
+                size: 0x05,
+            },
+        ];
 
         // When
-        let pairs: Vec<_> = regions.iter().copied().overlaps(memory_slice, base_address).collect();
+        let pairs: Vec<_> = regions
+            .iter()
+            .copied()
+            .overlaps(memory_slice, base_address)
+            .collect();
 
         // Then
         assert_eq!(pairs.len(), 2);
@@ -152,10 +168,23 @@ mod test {
         let memory_slice = &memory[..];
         let base_address = 15;
 
-        let regions = [FakeRegion { start: 10, size: 20 }, FakeRegion { start: 30, size: 100 }];
+        let regions = [
+            FakeRegion {
+                start: 10,
+                size: 20,
+            },
+            FakeRegion {
+                start: 30,
+                size: 100,
+            },
+        ];
 
         // When
-        let pairs: Vec<_> = regions.iter().copied().overlaps(memory_slice, base_address).collect();
+        let pairs: Vec<_> = regions
+            .iter()
+            .copied()
+            .overlaps(memory_slice, base_address)
+            .collect();
 
         // Then
         assert_eq!(pairs.len(), 2);
@@ -179,10 +208,23 @@ mod test {
         let memory_slice = &memory[..];
         let base_address = 15;
 
-        let regions = [FakeRegion { start: 10, size: 20 }, FakeRegion { start: 30, size: 100 }];
+        let regions = [
+            FakeRegion {
+                start: 10,
+                size: 20,
+            },
+            FakeRegion {
+                start: 30,
+                size: 100,
+            },
+        ];
 
         // When
-        let pairs: Vec<_> = regions.iter().copied().overlaps(memory_slice, base_address).collect();
+        let pairs: Vec<_> = regions
+            .iter()
+            .copied()
+            .overlaps(memory_slice, base_address)
+            .collect();
 
         // Then
         assert_eq!(pairs.len(), 1);

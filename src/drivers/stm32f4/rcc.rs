@@ -15,13 +15,21 @@ pub struct Clocks {
 }
 
 impl Clocks {
-    pub fn hclk(&self) -> Hertz { self.hclk }
+    pub fn hclk(&self) -> Hertz {
+        self.hclk
+    }
 
-    pub fn pclk1(&self) -> Hertz { self.pclk1 }
+    pub fn pclk1(&self) -> Hertz {
+        self.pclk1
+    }
 
-    pub fn pclk2(&self) -> Hertz { self.pclk2 }
+    pub fn pclk2(&self) -> Hertz {
+        self.pclk2
+    }
 
-    pub fn sysclk(&self) -> Hertz { self.sysclk }
+    pub fn sysclk(&self) -> Hertz {
+        self.sysclk
+    }
 
     /// Harcoded values for the f412, f446
     #[cfg(any(feature = "stm32f412", feature = "stm32f446"))]

@@ -1,6 +1,6 @@
+use crate::hal::time::{self, MegaHertz};
 use efm32gg11b::{CMU, MSC};
 use time::Hertz;
-use crate::hal::time::{self, MegaHertz};
 
 const HFRCO_STARTUP_FREQUENCY: time::MegaHertz = time::MegaHertz(19);
 
@@ -26,9 +26,7 @@ enum HfClkClockSource {
 impl Clocks {
     /// Currently hardcoded at 72mhz HFRCO
     pub fn new(cmu: CMU, msc: &mut MSC) -> Self {
-        let mut clocks = Self {
-            cmu,
-        };
+        let mut clocks = Self { cmu };
 
         let frequency = MegaHertz(72);
         let device_information_page = 0x0FE081B0;
@@ -37,7 +35,8 @@ impl Clocks {
             _ => todo!("Calibration for frequencies below 72mhz unimplemented"),
         };
 
-        let calibration_register = (device_information_page + calibration_information_offset) as *const u32;
+        let calibration_register =
+            (device_information_page + calibration_information_offset) as *const u32;
 
         // Safety: We need to access a raw memory location defined in the `efm32gg11b` reference
         // manual sections 4.6 and 4.7. This section is always defined, and user readable.
@@ -55,7 +54,9 @@ impl Clocks {
         }
         clocks.wait_for_hfrco_sync();
 
-        unsafe { clocks.cmu.hfrcoctrl.write(|w| w.bits(calibration));}
+        unsafe {
+            clocks.cmu.hfrcoctrl.write(|w| w.bits(calibration));
+        }
         clocks.set_prescalers(frequency);
         clocks
     }
@@ -65,21 +66,33 @@ impl Clocks {
         let hertz: Hertz = frequency.into();
 
         let mut divisor = (hertz.0 + 50_000_000u32 - 1u32) / 50_000_000u32;
-        if divisor > 0 { divisor -= 1 };
+        if divisor > 0 {
+            divisor -= 1
+        };
 
         // Safety: Unsafe access here is required only to write
         // multiple bits at once to the same register. We must ensure
         // that we write bits that leave the peripheral in a known and
         // correct state.
-        unsafe { self.cmu.hfperpresc.write(|w| w.bits(divisor));}
-        unsafe { self.cmu.hfperprescc.write(|w| w.bits(divisor));}
+        unsafe {
+            self.cmu.hfperpresc.write(|w| w.bits(divisor));
+        }
+        unsafe {
+            self.cmu.hfperprescc.write(|w| w.bits(divisor));
+        }
 
         let mut divisor = (hertz.0 + 72_000_000u32 - 1u32) / 72_000_000u32;
-        if divisor > 0 { divisor -= 1 };
-        unsafe { self.cmu.hfperprescb.write(|w| w.bits(divisor));}
+        if divisor > 0 {
+            divisor -= 1
+        };
+        unsafe {
+            self.cmu.hfperprescb.write(|w| w.bits(divisor));
+        }
     }
 
-    fn wait_for_hfrco_sync(&self) { while self.cmu.syncbusy.read().hfrcobsy().bit_is_set() {} }
+    fn wait_for_hfrco_sync(&self) {
+        while self.cmu.syncbusy.read().hfrcobsy().bit_is_set() {}
+    }
 
     fn set_flash_wait_states(msc: &mut MSC, frequency: MegaHertz) {
         const MSC_UNLOCK_CODE: u32 = 0x1B71;
@@ -109,7 +122,6 @@ impl Clocks {
             s if s.is_clkin0() => HfClkClockSource::Clkin0,
             _ => panic!(),
         }
-
     }
 
     pub fn get_frequency_hfclk(&self) -> time::Hertz {
@@ -122,8 +134,8 @@ impl Clocks {
                 let scale = 1 + self.cmu.hfpresc.read().bits();
                 let Hertz(value) = HFRCO_STARTUP_FREQUENCY.into();
                 Hertz(value / scale)
-            },
-            _ => unimplemented!()
+            }
+            _ => unimplemented!(),
         }
     }
 

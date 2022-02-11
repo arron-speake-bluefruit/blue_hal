@@ -67,7 +67,9 @@ impl Indirect for MockQspi {
             length_requested: data.len(),
             dummy_cycles,
         });
-        data.iter_mut().zip(self.to_read.pop_front().unwrap_or_default()).for_each(|(o, i)| *o = i);
+        data.iter_mut()
+            .zip(self.to_read.pop_front().unwrap_or_default())
+            .for_each(|(o, i)| *o = i);
         Ok(())
     }
 }

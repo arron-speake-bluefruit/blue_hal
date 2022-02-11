@@ -110,14 +110,22 @@ impl<Pin: OutputPin> LedPin for Pin {}
 impl<Pin: OutputPin> MonochromeLed<Pin> {
     pub fn new(mut pin: Pin, logic: LogicLevel) -> Self {
         pin.off(logic);
-        Self { pin, is_on: false, logic }
+        Self {
+            pin,
+            is_on: false,
+            logic,
+        }
     }
-    pub fn is_on(&self) -> bool { self.is_on }
+    pub fn is_on(&self) -> bool {
+        self.is_on
+    }
 }
 
 // Turn off when going out of scope
 impl<Pin: OutputPin> Drop for MonochromeLed<Pin> {
-    fn drop(&mut self) { self.off(); }
+    fn drop(&mut self) {
+        self.off();
+    }
 }
 
 impl<Pin: OutputPin> led::Toggle for MonochromeLed<Pin> {
@@ -149,15 +157,28 @@ impl<Pin: OutputPin> RgbLed<Pin> {
         red.off(logic);
         green.off(logic);
         blue.off(logic);
-        Self { red, green, blue, color: RgbPalette::Green, is_on: false, logic }
+        Self {
+            red,
+            green,
+            blue,
+            color: RgbPalette::Green,
+            is_on: false,
+            logic,
+        }
     }
-    pub fn get_color(&self) -> RgbPalette { self.color }
-    pub fn is_on(&self) -> bool { self.is_on }
+    pub fn get_color(&self) -> RgbPalette {
+        self.color
+    }
+    pub fn is_on(&self) -> bool {
+        self.is_on
+    }
 }
 
 // Turn off when going out of scope
 impl<Pin: OutputPin> Drop for RgbLed<Pin> {
-    fn drop(&mut self) { self.off(); }
+    fn drop(&mut self) {
+        self.off();
+    }
 }
 
 impl<Pin: OutputPin> led::Toggle for RgbLed<Pin> {
@@ -214,7 +235,9 @@ pub mod doubles {
 
     #[doc(hidden)]
     impl MonochromeLed<MockPin> {
-        pub fn pin(&self) -> &MockPin { &self.pin }
+        pub fn pin(&self) -> &MockPin {
+            &self.pin
+        }
     }
 
     #[doc(hidden)]

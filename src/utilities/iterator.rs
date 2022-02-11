@@ -33,7 +33,13 @@ pub struct UntilSequenceIterator<'a, T, I: Iterator<Item = T>> {
 
 impl<'a, T, I: Iterator<Item = T>> UntilSequence<T> for I {
     fn until_sequence(self, sequence: &[T]) -> UntilSequenceIterator<T, Self> {
-        UntilSequenceIterator { inner: self, sequence, head: 0, tail: 0, divergent: None }
+        UntilSequenceIterator {
+            inner: self,
+            sequence,
+            head: 0,
+            tail: 0,
+            divergent: None,
+        }
     }
 }
 
@@ -102,8 +108,19 @@ mod test {
         let sequence = [2, 3, 7];
 
         let expected = vec![3, 4, 1, 5];
-        assert_eq!(expected, values.iter().cloned().until_sequence(&sequence).collect::<Vec<u8>>());
-        assert!(values.iter().cloned().until_sequence(&sequence).contains_sequence());
+        assert_eq!(
+            expected,
+            values
+                .iter()
+                .cloned()
+                .until_sequence(&sequence)
+                .collect::<Vec<u8>>()
+        );
+        assert!(values
+            .iter()
+            .cloned()
+            .until_sequence(&sequence)
+            .contains_sequence());
     }
 
     #[test]
@@ -112,7 +129,14 @@ mod test {
         let sequence = [2, 3, 7];
 
         let expected = vec![3, 4, 1, 5, 2, 3];
-        assert_eq!(expected, values.iter().cloned().until_sequence(&sequence).collect::<Vec<u8>>());
+        assert_eq!(
+            expected,
+            values
+                .iter()
+                .cloned()
+                .until_sequence(&sequence)
+                .collect::<Vec<u8>>()
+        );
     }
 
     #[test]
@@ -121,7 +145,14 @@ mod test {
         let sequence = [1, 5, 7];
 
         let expected = vec![3, 4, 1, 5, 2, 3];
-        assert_eq!(expected, values.iter().cloned().until_sequence(&sequence).collect::<Vec<u8>>());
+        assert_eq!(
+            expected,
+            values
+                .iter()
+                .cloned()
+                .until_sequence(&sequence)
+                .collect::<Vec<u8>>()
+        );
     }
 
     #[test]
@@ -130,6 +161,13 @@ mod test {
         let sequence = [3, 3, 3];
 
         let expected = vec![3, 4, 1, 5, 2, 3];
-        assert_eq!(expected, values.iter().cloned().until_sequence(&sequence).collect::<Vec<u8>>());
+        assert_eq!(
+            expected,
+            values
+                .iter()
+                .cloned()
+                .until_sequence(&sequence)
+                .collect::<Vec<u8>>()
+        );
     }
 }

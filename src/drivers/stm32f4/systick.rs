@@ -33,13 +33,19 @@ impl SysTick {
 
 impl Now for SysTick {
     type I = Tick;
-    fn now() -> Tick { Tick { counter: TICK_COUNTER.load(Ordering::Relaxed) } }
+    fn now() -> Tick {
+        Tick {
+            counter: TICK_COUNTER.load(Ordering::Relaxed),
+        }
+    }
 }
 
 static TICK_COUNTER: AtomicU32 = AtomicU32::new(0);
 
 #[exception]
-fn SysTick() { TICK_COUNTER.fetch_add(1, Ordering::Relaxed); }
+fn SysTick() {
+    TICK_COUNTER.fetch_add(1, Ordering::Relaxed);
+}
 
 /// Tick subtraction to obtain a time period
 impl core::ops::Sub for Tick {
@@ -54,7 +60,11 @@ impl core::ops::Sub for Tick {
 impl<T: Into<time::Milliseconds>> core::ops::Add<T> for Tick {
     type Output = Self;
 
-    fn add(self, rhs: T) -> Self { Self { counter: self.counter + rhs.into().0 } }
+    fn add(self, rhs: T) -> Self {
+        Self {
+            counter: self.counter + rhs.into().0,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -65,7 +75,9 @@ mod test {
         // Given
         let ticks_difference = 10u32;
         let test_tick_early = Tick { counter: 0 };
-        let test_tick_late = Tick { counter: test_tick_early.counter + ticks_difference };
+        let test_tick_late = Tick {
+            counter: test_tick_early.counter + ticks_difference,
+        };
 
         assert_eq!(time::Milliseconds(10), test_tick_late - test_tick_early);
 

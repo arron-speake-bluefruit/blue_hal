@@ -20,18 +20,26 @@ pub const MANUFACTURER_ID: u8 = 0x20;
 pub struct Address(pub u32);
 impl Add<usize> for Address {
     type Output = Self;
-    fn add(self, rhs: usize) -> Address { Address(self.0 + rhs as u32) }
+    fn add(self, rhs: usize) -> Address {
+        Address(self.0 + rhs as u32)
+    }
 }
 impl Sub<usize> for Address {
     type Output = Self;
-    fn sub(self, rhs: usize) -> Address { Address(self.0.saturating_sub(rhs as u32)) }
+    fn sub(self, rhs: usize) -> Address {
+        Address(self.0.saturating_sub(rhs as u32))
+    }
 }
 impl Sub<Address> for Address {
     type Output = usize;
-    fn sub(self, rhs: Address) -> usize { self.0.saturating_sub(rhs.0) as usize }
+    fn sub(self, rhs: Address) -> usize {
+        self.0.saturating_sub(rhs.0) as usize
+    }
 }
 impl Into<usize> for Address {
-    fn into(self) -> usize { self.0 as usize }
+    fn into(self) -> usize {
+        self.0 as usize
+    }
 }
 
 pub struct MemoryMap {}
@@ -40,14 +48,24 @@ pub struct Subsector(usize);
 pub struct Page(usize);
 
 impl MemoryMap {
-    pub fn sectors() -> impl Iterator<Item = Sector> { (0..NUMBER_OF_SECTORS).map(Sector) }
+    pub fn sectors() -> impl Iterator<Item = Sector> {
+        (0..NUMBER_OF_SECTORS).map(Sector)
+    }
     pub fn subsectors() -> impl Iterator<Item = Subsector> {
         (0..NUMBER_OF_SUBSECTORS).map(Subsector)
     }
-    pub fn pages() -> impl Iterator<Item = Page> { (0..NUMBER_OF_PAGES).map(Page) }
-    pub const fn location() -> Address { BASE_ADDRESS }
-    pub const fn end() -> Address { Address(BASE_ADDRESS.0 + MEMORY_SIZE as u32) }
-    pub const fn size() -> usize { MEMORY_SIZE }
+    pub fn pages() -> impl Iterator<Item = Page> {
+        (0..NUMBER_OF_PAGES).map(Page)
+    }
+    pub const fn location() -> Address {
+        BASE_ADDRESS
+    }
+    pub const fn end() -> Address {
+        Address(BASE_ADDRESS.0 + MEMORY_SIZE as u32)
+    }
+    pub const fn size() -> usize {
+        MEMORY_SIZE
+    }
 }
 
 impl Sector {
@@ -57,31 +75,51 @@ impl Sector {
     pub fn pages(&self) -> impl Iterator<Item = Page> {
         ((self.0 * PAGES_PER_SECTOR)..((1 + self.0) * PAGES_PER_SECTOR)).map(Page)
     }
-    pub fn location(&self) -> Address { BASE_ADDRESS + self.0 * Self::size() }
-    pub fn end(&self) -> Address { self.location() + Self::size() }
+    pub fn location(&self) -> Address {
+        BASE_ADDRESS + self.0 * Self::size()
+    }
+    pub fn end(&self) -> Address {
+        self.location() + Self::size()
+    }
     pub fn at(address: Address) -> Option<Self> {
         MemoryMap::sectors().find(|s| s.contains(address))
     }
-    pub const fn size() -> usize { SECTOR_SIZE }
+    pub const fn size() -> usize {
+        SECTOR_SIZE
+    }
 }
 
 impl Subsector {
     pub fn pages(&self) -> impl Iterator<Item = Page> {
         ((self.0 * PAGES_PER_SUBSECTOR)..((1 + self.0) * PAGES_PER_SUBSECTOR)).map(Page)
     }
-    pub fn location(&self) -> Address { BASE_ADDRESS + self.0 * Self::size() }
-    pub fn end(&self) -> Address { self.location() + Self::size() }
+    pub fn location(&self) -> Address {
+        BASE_ADDRESS + self.0 * Self::size()
+    }
+    pub fn end(&self) -> Address {
+        self.location() + Self::size()
+    }
     pub fn at(address: Address) -> Option<Self> {
         MemoryMap::subsectors().find(|s| s.contains(address))
     }
-    pub const fn size() -> usize { SUBSECTOR_SIZE }
+    pub const fn size() -> usize {
+        SUBSECTOR_SIZE
+    }
 }
 
 impl Page {
-    pub fn location(&self) -> Address { BASE_ADDRESS + self.0 * Self::size() }
-    pub fn end(&self) -> Address { self.location() + Self::size() }
-    pub fn at(address: Address) -> Option<Self> { MemoryMap::pages().find(|p| p.contains(address)) }
-    pub const fn size() -> usize { PAGE_SIZE }
+    pub fn location(&self) -> Address {
+        BASE_ADDRESS + self.0 * Self::size()
+    }
+    pub fn end(&self) -> Address {
+        self.location() + Self::size()
+    }
+    pub fn at(address: Address) -> Option<Self> {
+        MemoryMap::pages().find(|p| p.contains(address))
+    }
+    pub const fn size() -> usize {
+        PAGE_SIZE
+    }
 }
 
 impl memory::Region<Address> for MemoryMap {
@@ -182,9 +220,19 @@ where
         if Self::status(&mut self.qspi)?.write_in_progress {
             Err(nb::Error::WouldBlock)
         } else {
-            Self::execute_command(&mut self.qspi, Command::WriteEnable, None, CommandData::None)?;
+            Self::execute_command(
+                &mut self.qspi,
+                Command::WriteEnable,
+                None,
+                CommandData::None,
+            )?;
             Self::execute_command(&mut self.qspi, Command::BulkErase, None, CommandData::None)?;
-            Self::execute_command(&mut self.qspi, Command::WriteDisable, None, CommandData::None)?;
+            Self::execute_command(
+                &mut self.qspi,
+                Command::WriteDisable,
+                None,
+                CommandData::None,
+            )?;
             while Self::status(&mut self.qspi)?.write_in_progress {}
             Ok(())
         }
@@ -259,8 +307,12 @@ where
         }
     }
 
-    fn range(&self) -> (Address, Address) { (MemoryMap::location(), MemoryMap::end()) }
-    fn label() -> &'static str { "Micron n25q128a (External)" }
+    fn range(&self) -> (Address, Address) {
+        (MemoryMap::location(), MemoryMap::end())
+    }
+    fn label() -> &'static str {
+        "Micron n25q128a (External)"
+    }
 }
 
 impl<QSPI, NOW> MicronN25q128a<QSPI, NOW>
@@ -322,7 +374,12 @@ where
 
     fn status(qspi: &mut QSPI) -> nb::Result<Status, Error> {
         let mut response = [0u8; 1];
-        Self::execute_command(qspi, Command::ReadStatus, None, CommandData::Read(&mut response))?;
+        Self::execute_command(
+            qspi,
+            Command::ReadStatus,
+            None,
+            CommandData::Read(&mut response),
+        )?;
         let response = response[0];
         Ok(Status {
             write_in_progress: response.is_set(0),
@@ -332,13 +389,21 @@ where
 
     /// Blocks until flash ID read checks out, or until timeout
     pub fn new(qspi: QSPI) -> Result<Self, Error> {
-        let mut flash = Self { qspi, timeout: None, _marker: Default::default() };
+        let mut flash = Self {
+            qspi,
+            timeout: None,
+            _marker: Default::default(),
+        };
         block!(flash.verify_id())?;
         Ok(flash)
     }
 
     pub fn with_timeout(qspi: QSPI, timeout: time::Milliseconds) -> Result<Self, Error> {
-        let mut flash = Self { qspi, timeout: Some(timeout), _marker: Default::default() };
+        let mut flash = Self {
+            qspi,
+            timeout: Some(timeout),
+            _marker: Default::default(),
+        };
         block!(flash.verify_id())?;
         Ok(flash)
     }
@@ -411,7 +476,12 @@ mod test {
 
         let expected_address = Address((3 * SECTOR_SIZE + 3 * SUBSECTOR_SIZE) as u32);
         let expected_index = 3 * SUBSECTORS_PER_SECTOR + 3;
-        let subsector = MemoryMap::sectors().nth(3).unwrap().subsectors().nth(3).unwrap();
+        let subsector = MemoryMap::sectors()
+            .nth(3)
+            .unwrap()
+            .subsectors()
+            .nth(3)
+            .unwrap();
         assert_eq!(expected_address, subsector.location());
         assert_eq!(subsector.0, expected_index);
 
@@ -485,7 +555,9 @@ mod test {
         let data = [0xAAu8; PAGE_SIZE];
 
         // When
-        flash.write_page(&Page::at(address).unwrap(), &data, address).unwrap();
+        flash
+            .write_page(&Page::at(address).unwrap(), &data, address)
+            .unwrap();
         let records = &flash.qspi.command_records;
 
         // Then

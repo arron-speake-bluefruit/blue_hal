@@ -45,7 +45,11 @@ where
     #[must_use]
     pub fn new(item: &'a mut T, on_entry: F, on_exit: G) -> Self {
         on_entry(item);
-        Self { item, on_exit: Some(on_exit), _marker: PhantomData::default() }
+        Self {
+            item,
+            on_exit: Some(on_exit),
+            _marker: PhantomData::default(),
+        }
     }
 }
 
@@ -54,5 +58,7 @@ where
     F: FnOnce(&mut T),
     G: FnOnce(&mut T),
 {
-    fn drop(&mut self) { self.on_exit.take().unwrap()(self.item); }
+    fn drop(&mut self) {
+        self.on_exit.take().unwrap()(self.item);
+    }
 }

@@ -25,21 +25,29 @@ pub struct Address(pub u32);
 
 impl Add<usize> for Address {
     type Output = Self;
-    fn add(self, rhs: usize) -> Address { Address(self.0 + rhs as u32) }
+    fn add(self, rhs: usize) -> Address {
+        Address(self.0 + rhs as u32)
+    }
 }
 
 impl Sub<usize> for Address {
     type Output = Self;
-    fn sub(self, rhs: usize) -> Address { Address(self.0.saturating_sub(rhs as u32)) }
+    fn sub(self, rhs: usize) -> Address {
+        Address(self.0.saturating_sub(rhs as u32))
+    }
 }
 
 impl Sub<Address> for Address {
     type Output = usize;
-    fn sub(self, rhs: Address) -> usize { self.0.saturating_sub(rhs.0) as usize }
+    fn sub(self, rhs: Address) -> usize {
+        self.0.saturating_sub(rhs.0) as usize
+    }
 }
 
 impl Into<usize> for Address {
-    fn into(self) -> usize { self.0 as usize }
+    fn into(self) -> usize {
+        self.0 as usize
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -121,7 +129,11 @@ const fn max_sector_size() -> usize {
     let (mut index, mut size) = (0, 0usize);
     loop {
         let sector_size = MEMORY_MAP.sectors[index].size;
-        size = if sector_size > size { sector_size } else { size };
+        size = if sector_size > size {
+            sector_size
+        } else {
+            size
+        };
         index += 1;
         if index == SECTOR_NUMBER {
             break size;
@@ -135,12 +147,17 @@ impl MemoryMap {
         let main_sectors = self.sectors.iter().filter(|s| s.is_in_main_memory_area());
         let mut consecutive_pairs = main_sectors.clone().zip(main_sectors.skip(1));
         let consecutive = consecutive_pairs.all(|(a, b)| a.end() == b.start());
-        let ranges_valid =
-            self.sectors.iter().map(|s| Range(s.start(), s.end())).all(Range::is_valid);
+        let ranges_valid = self
+            .sectors
+            .iter()
+            .map(|s| Range(s.start(), s.end()))
+            .all(Range::is_valid);
         consecutive && ranges_valid
     }
 
-    fn sectors() -> impl Iterator<Item = Sector> { MEMORY_MAP.sectors.iter().cloned() }
+    fn sectors() -> impl Iterator<Item = Sector> {
+        MEMORY_MAP.sectors.iter().cloned()
+    }
     pub const fn writable_start() -> Address {
         let mut i = 0;
         loop {
@@ -206,7 +223,9 @@ impl Range {
     }
 
     /// Verify that all sectors spanned by this range are writable
-    fn is_writable(self) -> bool { self.span().iter().all(Sector::is_writable) }
+    fn is_writable(self) -> bool {
+        self.span().iter().all(Sector::is_writable)
+    }
 }
 
 impl memory::Region<Address> for Sector {
@@ -216,17 +235,31 @@ impl memory::Region<Address> for Sector {
 }
 
 impl Sector {
-    const fn start(&self) -> Address { self.location }
-    const fn end(&self) -> Address { Address(self.start().0 + self.size as u32) }
+    const fn start(&self) -> Address {
+        self.location
+    }
+    const fn end(&self) -> Address {
+        Address(self.start().0 + self.size as u32)
+    }
     const fn new(block: Block, location: Address, size: usize) -> Self {
-        Sector { block, location, size }
+        Sector {
+            block,
+            location,
+            size,
+        }
     }
     fn number(&self) -> Option<u8> {
-        MEMORY_MAP.sectors.iter().enumerate().find_map(|(index, sector)| {
-            (sector.is_in_main_memory_area() && self == sector).then_some(index as u8)
-        })
+        MEMORY_MAP
+            .sectors
+            .iter()
+            .enumerate()
+            .find_map(|(index, sector)| {
+                (sector.is_in_main_memory_area() && self == sector).then_some(index as u8)
+            })
     }
-    const fn is_writable(&self) -> bool { self.block as u8 == Block::Main as u8 }
+    const fn is_writable(&self) -> bool {
+        self.block as u8 == Block::Main as u8
+    }
     const fn is_in_main_memory_area(&self) -> bool {
         self.block as u8 == Block::Main as u8 || self.block as u8 == Block::Reserved as u8
     }
@@ -252,10 +285,14 @@ impl McuFlash {
         Ok(())
     }
 
-    fn lock(&mut self) { self.flash.cr.modify(|_, w| w.lock().set_bit()); }
+    fn lock(&mut self) {
+        self.flash.cr.modify(|_, w| w.lock().set_bit());
+    }
 
     fn erase(&mut self, sector: &Sector) -> nb::Result<(), Error> {
-        let number = sector.number().ok_or(nb::Error::Other(Error::MemoryNotReachable))?;
+        let number = sector
+            .number()
+            .ok_or(nb::Error::Other(Error::MemoryNotReachable))?;
         self.unlock()?;
         self.flash
             .cr
@@ -264,7 +301,9 @@ impl McuFlash {
         Ok(())
     }
 
-    fn is_busy(&self) -> bool { self.flash.sr.read().bsy().bit_is_set() }
+    fn is_busy(&self) -> bool {
+        self.flash.sr.read().bsy().bit_is_set()
+    }
 
     fn write_bytes(
         &mut self,
@@ -399,7 +438,9 @@ impl ReadWrite for McuFlash {
         Ok(())
     }
 
-    fn label() -> &'static str { "stm32f4 flash (Internal)" }
+    fn label() -> &'static str {
+        "stm32f4 flash (Internal)"
+    }
 }
 
 #[cfg(test)]

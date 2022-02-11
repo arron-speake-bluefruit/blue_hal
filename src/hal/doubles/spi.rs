@@ -11,7 +11,11 @@ pub struct MockSpi<WORD> {
 
 impl<WORD> MockSpi<WORD> {
     pub fn new() -> Self {
-        Self { to_receive: VecDeque::new(), sent: VecDeque::new(), awaiting_receive: false }
+        Self {
+            to_receive: VecDeque::new(),
+            sent: VecDeque::new(),
+            awaiting_receive: false,
+        }
     }
 }
 

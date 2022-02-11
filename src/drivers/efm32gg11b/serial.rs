@@ -1,11 +1,20 @@
-
 use core::any::Any;
 
-use super::{clocks::Clocks, gpio::{
-    typestate::{Input, Output},
-    *,
-}};
-use crate::{serial_write, efm32pac, hal::{gpio::{InputPin, OutputPin}, time::Hertz}};
+use super::{
+    clocks::Clocks,
+    gpio::{
+        typestate::{Input, Output},
+        *,
+    },
+};
+use crate::{
+    efm32pac,
+    hal::{
+        gpio::{InputPin, OutputPin},
+        time::Hertz,
+    },
+    serial_write,
+};
 use efm32pac::{UART0, UART1, USART0, USART1, USART2, USART3, USART4, USART5};
 
 mod sealed {
@@ -46,7 +55,11 @@ impl<U: Any, TX: TxPin<U>, RX: RxPin<U>> Serial<U, TX, RX> {
     const OVERSAMPLE: u32 = 16;
 
     pub fn new(peripheral: U, tx: TX, rx: RX, clocks: &Clocks) -> Self {
-        let mut serial = Self { peripheral, _tx: tx, _rx: rx };
+        let mut serial = Self {
+            peripheral,
+            _tx: tx,
+            _rx: rx,
+        };
         serial.set_baud_rate(clocks);
         serial
     }
@@ -54,15 +67,17 @@ impl<U: Any, TX: TxPin<U>, RX: RxPin<U>> Serial<U, TX, RX> {
     fn set_baud_rate(&mut self, clocks: &Clocks) {
         let Hertz(frequency) = clocks.get_frequency_hfclk();
         // Operate in u64 to avoid overflow
-        let divider = ((256 * frequency as u64) / ((Self::OVERSAMPLE * Self::BAUD_RATE) - 256) as u64) as u32;
+        let divider =
+            ((256 * frequency as u64) / ((Self::OVERSAMPLE * Self::BAUD_RATE) - 256) as u64) as u32;
 
         // Safety: Unsafe access here is required only to write
         // multiple bits at once to the same register. We must ensure
         // that we write bits that leave the peripheral in a known and
         // correct state.
-        unsafe { serial_write!(&self.peripheral, clkdiv, |w| { w.bits(divider)}); }
+        unsafe {
+            serial_write!(&self.peripheral, clkdiv, |w| { w.bits(divider) });
+        }
     }
-
 }
 
 #[macro_export(local_inner_macros)]

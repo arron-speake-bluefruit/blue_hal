@@ -25,8 +25,8 @@ pub mod efm32gg11b {
     pub mod gpio;
     #[macro_use]
     pub mod serial;
-    pub mod flash;
     pub mod clocks;
+    pub mod flash;
 }
 
 #[cfg(feature = "max3263_any")]

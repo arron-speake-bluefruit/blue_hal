@@ -46,7 +46,13 @@ fn parse_chunk(input: &[u8]) -> IResult<&[u8], Message> {
     let (input, payload) = take(PAYLOAD_SIZE)(input)?;
     let checksum: u8 = payload.iter().fold(0u8, |sum, b| sum.wrapping_add(*b));
     let (input, _) = tag(&[checksum])(input)?;
-    Ok((input, Message::Chunk(Chunk { block_number, payload: payload.try_into().unwrap() })))
+    Ok((
+        input,
+        Message::Chunk(Chunk {
+            block_number,
+            payload: payload.try_into().unwrap(),
+        }),
+    ))
 }
 
 fn parse_eot(input: &[u8]) -> IResult<&[u8], Message> {
@@ -109,7 +115,10 @@ mod test {
         let expected_index = 7u8;
 
         assert_eq!(
-            Message::Chunk(Chunk { payload: expected_payload, block_number: expected_index }),
+            Message::Chunk(Chunk {
+                payload: expected_payload,
+                block_number: expected_index
+            }),
             message
         );
         assert_eq!(input.len(), 0);
@@ -131,12 +140,18 @@ mod test {
 
         let (input, message) = parse_message(&input).unwrap();
         assert_eq!(
-            Message::Chunk(Chunk { payload: [1u8; PAYLOAD_SIZE], block_number: 1 }),
+            Message::Chunk(Chunk {
+                payload: [1u8; PAYLOAD_SIZE],
+                block_number: 1
+            }),
             message
         );
         let (input, message) = parse_message(&input).unwrap();
         assert_eq!(
-            Message::Chunk(Chunk { payload: [2u8; PAYLOAD_SIZE], block_number: 2 }),
+            Message::Chunk(Chunk {
+                payload: [2u8; PAYLOAD_SIZE],
+                block_number: 2
+            }),
             message
         );
         let (input, message) = parse_message(&input).unwrap();

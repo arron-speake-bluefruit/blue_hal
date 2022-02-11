@@ -21,7 +21,12 @@ pub trait Read {
 
     /// Reads a single byte
     fn read(&mut self) -> nb::Result<u8, Self::Error>;
-    fn bytes(&mut self) -> ReadIterator<Self> { ReadIterator { reader: self, errored: false } }
+    fn bytes(&mut self) -> ReadIterator<Self> {
+        ReadIterator {
+            reader: self,
+            errored: false,
+        }
+    }
 }
 
 /// UART read half, with timeouts. Rather than returning a `nb::Result` for flow control,
@@ -33,7 +38,11 @@ pub trait TimeoutRead {
     /// Reads a single byte
     fn read<T: Copy + Into<Milliseconds>>(&mut self, timeout: T) -> Result<u8, Self::Error>;
     fn bytes<T: Copy + Into<Milliseconds>>(&mut self, timeout: T) -> TimeoutReadIterator<Self, T> {
-        TimeoutReadIterator { reader: self, errored: false, timeout }
+        TimeoutReadIterator {
+            reader: self,
+            errored: false,
+            timeout,
+        }
     }
 }
 
@@ -155,7 +164,9 @@ mod test {
         type Error = ();
 
         /// Reads a single word
-        fn read(&mut self) -> nb::Result<u8, Self::Error> { Ok(self.mock_value_to_read) }
+        fn read(&mut self) -> nb::Result<u8, Self::Error> {
+            Ok(self.mock_value_to_read)
+        }
     }
 
     use super::*;

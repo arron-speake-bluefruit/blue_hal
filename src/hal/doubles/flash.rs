@@ -12,7 +12,13 @@ pub struct FakeFlash {
 }
 
 impl FakeFlash {
-    pub fn new(base: Address) -> FakeFlash { FakeFlash { base, data: Vec::new(), length: MB!(16) } }
+    pub fn new(base: Address) -> FakeFlash {
+        FakeFlash {
+            base,
+            data: Vec::new(),
+            length: MB!(16),
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, Ord, PartialOrd, PartialEq, Eq)]
@@ -26,7 +32,11 @@ impl flash::ReadWrite for FakeFlash {
         if address < self.base {
             Err(nb::Error::Other(FakeError))
         } else {
-            self.data.iter().skip(address - self.base).zip(bytes).for_each(|(i, o)| *o = *i);
+            self.data
+                .iter()
+                .skip(address - self.base)
+                .zip(bytes)
+                .for_each(|(i, o)| *o = *i);
             Ok(())
         }
     }
@@ -36,13 +46,20 @@ impl flash::ReadWrite for FakeFlash {
             Err(nb::Error::Other(FakeError))
         } else {
             let offset = address - self.base;
-            self.data.resize_with(max(self.data.len(), offset + bytes.len()), Default::default);
-            self.data.iter_mut().skip(offset).zip(bytes).for_each(|(o, i)| *o = *i);
+            self.data
+                .resize_with(max(self.data.len(), offset + bytes.len()), Default::default);
+            self.data
+                .iter_mut()
+                .skip(offset)
+                .zip(bytes)
+                .for_each(|(o, i)| *o = *i);
             Ok(())
         }
     }
 
-    fn range(&self) -> (Self::Address, Self::Address) { (self.base, self.base + self.length) }
+    fn range(&self) -> (Self::Address, Self::Address) {
+        (self.base, self.base + self.length)
+    }
 
     fn erase(&mut self) -> nb::Result<(), Self::Error> {
         self.data.clear();
@@ -57,24 +74,34 @@ impl flash::ReadWrite for FakeFlash {
         todo!()
     }
 
-    fn label() -> &'static str { "Fake Flash" }
+    fn label() -> &'static str {
+        "Fake Flash"
+    }
 }
 
 impl Add<usize> for Address {
     type Output = Address;
-    fn add(self, rhs: usize) -> Self::Output { Address(self.0 + rhs as u32) }
+    fn add(self, rhs: usize) -> Self::Output {
+        Address(self.0 + rhs as u32)
+    }
 }
 
 impl Sub<usize> for Address {
     type Output = Address;
-    fn sub(self, rhs: usize) -> Self::Output { Address(self.0.saturating_sub(rhs as u32)) }
+    fn sub(self, rhs: usize) -> Self::Output {
+        Address(self.0.saturating_sub(rhs as u32))
+    }
 }
 
 impl Sub<Address> for Address {
     type Output = usize;
-    fn sub(self, rhs: Address) -> Self::Output { self.0.saturating_sub(rhs.0) as usize }
+    fn sub(self, rhs: Address) -> Self::Output {
+        self.0.saturating_sub(rhs.0) as usize
+    }
 }
 
 impl From<Address> for usize {
-    fn from(address: Address) -> Self { address.0 as usize }
+    fn from(address: Address) -> Self {
+        address.0 as usize
+    }
 }

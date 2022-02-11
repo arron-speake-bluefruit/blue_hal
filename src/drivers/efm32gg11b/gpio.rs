@@ -59,7 +59,11 @@ enum Mode {
 impl<MODE, const PORT: char, const INDEX: u8> Pin<MODE, PORT, INDEX> {
     // Inner constructor. Only the GPIO module can call it to ensure
     // there only exists one of each pin.
-    fn new() -> Self { Self { _marker: Default::default() } }
+    fn new() -> Self {
+        Self {
+            _marker: Default::default(),
+        }
+    }
 
     /// Sets the pin to input mode.
     pub fn as_input(self) -> Pin<Input, PORT, INDEX> {
@@ -121,7 +125,9 @@ impl<const PORT: char, const INDEX: u8> OutputPin for Pin<Output, PORT, INDEX> {
 }
 
 impl<const PORT: char, const INDEX: u8> TogglePin for Pin<Output, PORT, INDEX> {
-    fn toggle(&mut self) { unsafe { gpio_write!(PORT, douttgl, |w| { w.bits(1 << INDEX) }) } }
+    fn toggle(&mut self) {
+        unsafe { gpio_write!(PORT, douttgl, |w| { w.bits(1 << INDEX) }) }
+    }
 }
 
 impl<const PORT: char, const INDEX: u8> InputPin for Pin<Input, PORT, INDEX> {
@@ -129,7 +135,9 @@ impl<const PORT: char, const INDEX: u8> InputPin for Pin<Input, PORT, INDEX> {
         unsafe { gpio_read!(PORT, din, |r| { r.bits() >> INDEX & 1 == 1 }) }
     }
 
-    fn is_low(&self) -> bool { !self.is_high() }
+    fn is_low(&self) -> bool {
+        !self.is_high()
+    }
 }
 
 /// Reads from the specific GPIO register associated to a given port

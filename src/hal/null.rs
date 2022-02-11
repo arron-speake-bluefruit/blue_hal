@@ -13,13 +13,17 @@ pub struct NullError;
 
 impl Read for NullSerial {
     type Error = NullError;
-    fn read(&mut self) -> nb::Result<u8, Self::Error> { unimplemented!() }
+    fn read(&mut self) -> nb::Result<u8, Self::Error> {
+        unimplemented!()
+    }
 }
 
 impl Write for NullSerial {
     type Error = NullError;
 
-    fn write_str(&mut self, _: &str) -> Result<(), Self::Error> { unimplemented!() }
+    fn write_str(&mut self, _: &str) -> Result<(), Self::Error> {
+        unimplemented!()
+    }
 }
 
 impl TimeoutRead for NullSerial {
@@ -44,8 +48,12 @@ impl flash::ReadWrite for NullFlash {
     fn write(&mut self, _: Self::Address, _: &[u8]) -> nb::Result<(), Self::Error> {
         unimplemented!()
     }
-    fn range(&self) -> (Self::Address, Self::Address) { unimplemented!() }
-    fn erase(&mut self) -> nb::Result<(), Self::Error> { unimplemented!() }
+    fn range(&self) -> (Self::Address, Self::Address) {
+        unimplemented!()
+    }
+    fn erase(&mut self) -> nb::Result<(), Self::Error> {
+        unimplemented!()
+    }
     fn write_from_blocks<I: Iterator<Item = [u8; N]>, const N: usize>(
         &mut self,
         _: Self::Address,
@@ -62,16 +70,22 @@ pub struct NullInstant;
 
 impl core::ops::Sub for NullInstant {
     type Output = time::Milliseconds;
-    fn sub(self, _: Self) -> Self::Output { time::Milliseconds(0) }
+    fn sub(self, _: Self) -> Self::Output {
+        time::Milliseconds(0)
+    }
 }
 
 /// Addition between any Millisecond-convertible type and the current tick.
 impl<T: Into<time::Milliseconds>> core::ops::Add<T> for NullInstant {
     type Output = Self;
-    fn add(self, _: T) -> Self { Self {} }
+    fn add(self, _: T) -> Self {
+        Self {}
+    }
 }
 
 impl time::Now for NullSystick {
     type I = NullInstant;
-    fn now() -> Self::I { unimplemented!() }
+    fn now() -> Self::I {
+        unimplemented!()
+    }
 }

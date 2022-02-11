@@ -235,7 +235,11 @@ where
         // Enable
         qspi.cr.modify(|_, w| w.en().set_bit());
 
-        Ok(Self { config, qspi, _marker: PhantomData::default() })
+        Ok(Self {
+            config,
+            qspi,
+            _marker: PhantomData::default(),
+        })
     }
 }
 
@@ -248,7 +252,10 @@ struct Status {
 impl<PINS, MODE> QuadSpi<PINS, MODE> {
     fn status(&self) -> Status {
         let flags = self.qspi.sr.read();
-        Status { busy: flags.busy().bit(), fifo_threshold: flags.ftf().bit() }
+        Status {
+            busy: flags.busy().bit(),
+            fifo_threshold: flags.ftf().bit(),
+        }
     }
 
     const QSPI_ADDRESS: u32 = 0xA0001000;
@@ -320,7 +327,11 @@ impl<PINS> qspi::Indirect for QuadSpi<PINS, mode::Single> {
         // Applies to all unsafe blocks in this function unless specified otherwise.
         // Sets Data Length Register, configuring the amount of bytes to write.
         self.qspi.dlr.write(|w| unsafe {
-            w.bits(if let Some(data) = data { data.len().saturating_sub(1) as u32 } else { 0 })
+            w.bits(if let Some(data) = data {
+                data.len().saturating_sub(1) as u32
+            } else {
+                0
+            })
         });
 
         // Configure Communicaton Configuration Register.
@@ -383,7 +394,9 @@ impl<PINS> qspi::Indirect for QuadSpi<PINS, mode::Single> {
         // NOTE(safety) The unsafe "bits" method is used to write multiple bits conveniently.
         // Applies to all unsafe blocks in this function unless specified otherwise.
         // Sets Data Length Register, configuring the amount of bytes to read.
-        self.qspi.dlr.write(|w| unsafe { w.bits(data.len().saturating_sub(1) as u32) });
+        self.qspi
+            .dlr
+            .write(|w| unsafe { w.bits(data.len().saturating_sub(1) as u32) });
 
         // Configure Communicaton Configuration Register.
         // This sets up all rules for this QSPI read.

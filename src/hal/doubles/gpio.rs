@@ -8,8 +8,12 @@ pub struct MockPin {
 }
 
 impl MockPin {
-    pub fn is_high(&self) -> bool { self.state }
-    pub fn is_low(&self) -> bool { !self.state }
+    pub fn is_high(&self) -> bool {
+        self.state
+    }
+    pub fn is_low(&self) -> bool {
+        !self.state
+    }
 }
 
 impl OutputPin for MockPin {
