@@ -177,13 +177,13 @@ impl Range {
             .sectors
             .iter()
             .enumerate()
-            .find_map(|(i, sector)| self.overlaps(sector).then_some(i));
+            .find_map(|(i, sector)| if self.overlaps(sector) { Some(i) } else { None });
         let last = MEMORY_MAP
             .sectors
             .iter()
             .enumerate()
             .rev()
-            .find_map(|(i, sector)| self.overlaps(sector).then_some(i));
+            .find_map(|(i, sector)| if self.overlaps(sector) { Some(i) } else { None });
         match (first, last) {
             (Some(first), Some(last)) if (last >= first) => &MEMORY_MAP.sectors[first..(last + 1)],
             _ => &MEMORY_MAP.sectors[0..1],
@@ -223,7 +223,11 @@ impl Sector {
     }
     fn number(&self) -> Option<u8> {
         MEMORY_MAP.sectors.iter().enumerate().find_map(|(index, sector)| {
-            (sector.is_in_main_memory_area() && self == sector).then_some(index as u8)
+            if sector.is_in_main_memory_area() && self == sector {
+                Some(index as u8)
+            } else {
+                None
+            }
         })
     }
     const fn is_writable(&self) -> bool { self.block as u8 == Block::Main as u8 }
