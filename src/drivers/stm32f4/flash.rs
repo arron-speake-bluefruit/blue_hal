@@ -3,7 +3,6 @@ use crate::{
     hal::flash::ReadWrite,
     stm32pac::FLASH,
     utilities::{
-        bitwise::SliceBitSubset,
         memory::{self, IterableByOverlaps},
     },
 };
@@ -116,18 +115,6 @@ const MEMORY_MAP: MemoryMap = MemoryMap {
         Sector::new(Block::OptionBytes, Address(0x1FFF_C000), 16),
     ],
 };
-
-const fn max_sector_size() -> usize {
-    let (mut index, mut size) = (0, 0usize);
-    loop {
-        let sector_size = MEMORY_MAP.sectors[index].size;
-        size = if sector_size > size { sector_size } else { size };
-        index += 1;
-        if index == SECTOR_NUMBER {
-            break size;
-        }
-    }
-}
 
 impl MemoryMap {
     // Verifies that the memory map is consecutive and well formed
@@ -252,7 +239,14 @@ impl McuFlash {
         Ok(())
     }
 
-    fn lock(&mut self) { self.flash.cr.modify(|_, w| w.lock().set_bit()); }
+    fn lock(&mut self) -> nb::Result<(), Error> {
+        if self.is_busy() {
+            Err(nb::Error::WouldBlock)
+        } else {
+            self.flash.cr.modify(|_, w| w.lock().set_bit());
+            Ok(())
+        }
+    }
 
     fn erase(&mut self, sector: &Sector) -> nb::Result<(), Error> {
         let number = sector.number().ok_or(nb::Error::Other(Error::MemoryNotReachable))?;
@@ -260,7 +254,7 @@ impl McuFlash {
         self.flash
             .cr
             .modify(|_, w| unsafe { w.ser().set_bit().snb().bits(number).strt().set_bit() });
-        self.lock();
+        block!(self.lock())?;
         Ok(())
     }
 
@@ -297,7 +291,7 @@ impl McuFlash {
                 *(base_address.add(index)) = word;
             }
         }
-        self.lock();
+        block!(self.lock())?;
         Ok(())
     }
 }
@@ -320,7 +314,16 @@ impl ReadWrite for McuFlash {
     }
 
     fn write(&mut self, address: Address, bytes: &[u8]) -> nb::Result<(), Self::Error> {
-        if address.0 % 4 != 0 {
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // WORKAROUND: This function pushes a 128KiB buffer onto the stack!! This makes chips    //
+        // with 128KiB of RAM die, which isn't good. A workaround is to enforce writes starting  //
+        // at sector boundaries, meaning this scratch buffer doesn't need to exist. While this   //
+        // fixes the issue, other changes need to be made to suit the change. Eg. enforcing at a //
+        // type level, updating loadstone_front, etc.                                            //
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        let address_is_sector_boundary = MEMORY_MAP.sectors.iter().any(|s| s.location == address);
+        if !address_is_sector_boundary {
             return Err(nb::Error::Other(Error::MisalignedAccess));
         }
 
@@ -334,25 +337,9 @@ impl ReadWrite for McuFlash {
             return Err(nb::Error::WouldBlock);
         }
 
-        for (block, sector, address) in MemoryMap::sectors().overlaps(bytes, address) {
-            let sector_data = &mut [0u8; max_sector_size()][0..sector.size];
-            let offset_into_sector = address.0.saturating_sub(sector.start().0) as usize;
-
-            block!(self.read(sector.start(), sector_data))?;
-            if block.is_subset_of(&sector_data[offset_into_sector..sector.size]) {
-                // No need to erase the sector, as we can just flip bits off
-                // (since our block is a bitwise subset of the sector)
-                block!(self.write_bytes(block, &sector, address))?;
-            } else {
-                // We have to erase and rewrite any saved data alongside the new block
-                block!(self.erase(&sector))?;
-                sector_data
-                    .iter_mut()
-                    .skip(offset_into_sector)
-                    .zip(block)
-                    .for_each(|(byte, input)| *byte = *input);
-                block!(self.write_bytes(sector_data, &sector, sector.location))?;
-            }
+        for (block, sector, _address) in MemoryMap::sectors().overlaps(bytes, address) {
+            block!(self.erase(&sector))?;
+            block!(self.write_bytes(block, &sector, sector.location))?;
         }
 
         Ok(())
