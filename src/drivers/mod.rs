@@ -38,6 +38,13 @@ pub mod max3263 {
 pub mod led;
 
 /// Drivers for the Micron manufacturer (e.g. external flash).
+#[cfg(feature = "stm32f446")]
+pub mod winbond {
+    /// W25Q32JV external flash chip
+    pub mod w25q32jv_flash;
+}
+
+/// Drivers for the Micron manufacturer (e.g. external flash).
 #[cfg(feature = "stm32f412")]
 pub mod micron {
     /// N25Q128A external flash chip
